@@ -87,6 +87,9 @@
     <ClCompile Include="CStaticCamera.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
+    <ClCompile Include="CSprite.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CShader.h">
@@ -147,6 +150,9 @@
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
     <ClInclude Include="CStaticCamera.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="CSprite.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>

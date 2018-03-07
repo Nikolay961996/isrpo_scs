@@ -164,6 +164,7 @@
     <ClCompile Include="CPxShape.cpp" />
     <ClCompile Include="CShader.cpp" />
     <ClCompile Include="CSourceLight.cpp" />
+    <ClCompile Include="CSprite.cpp" />
     <ClCompile Include="CStaticCamera.cpp" />
     <ClCompile Include="CTexture.cpp" />
     <ClCompile Include="Source.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="CPxShape.h" />
     <ClInclude Include="CShader.h" />
     <ClInclude Include="CSourceLight.h" />
+    <ClInclude Include="CSprite.h" />
     <ClInclude Include="CStaticCamera.h" />
     <ClInclude Include="CTexture.h" />
   </ItemGroup>

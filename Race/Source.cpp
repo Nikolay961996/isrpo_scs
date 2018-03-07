@@ -26,6 +26,7 @@
 #include "CTexture.h"
 #include "CMaterialTextureOnly.h"
 #include "CFBO.h"
+#include "CSprite.h"
 
 using namespace std;
 using namespace physx;
@@ -54,6 +55,7 @@ CTexture Tex_Wood;					// текстура дерева
 CTexture Tex_Wood_Specular;			// зеркальная текстура дерева
 CTexture Tex_Sky_box;				// кубическая текстура неба
 CFBO ShadowFBO;						// буфер кадра для теней
+CSprite SpriteHero;                 // спрайт персонажа
 
 CPxMaterial gMaterial;				// объект для представления материала (задает упругость, коэффициент трения и т.д.)
 CPxShape	gShape;					// физическая модель
@@ -133,7 +135,7 @@ void	InitObject(void)
 	// текстура неба
 	Tex_Sky_box.SetActiveBlock(GL_TEXTURE0);
 	Tex_Sky_box.LoadKubMap("SkyBox_back.png", "SkyBox_top.png", "SkyBox_left.png", \
-							"SkyBox_front.png", "SkyBox_bottom.png", "SkyBox_right.png");
+		"SkyBox_front.png", "SkyBox_bottom.png", "SkyBox_right.png");
 
 	// материал плоскости
 	PlaneMatMix.SetAmbient(vec4(0.8f, 0.8f, 0.8f, 1.0f));
@@ -154,6 +156,10 @@ void	InitObject(void)
 	// материал неба
 	SkyBoxMat.SetTexture(&Tex_Sky_box);
 
+	// настройки спрайта персонажа
+	SpriteHero.Load("hero.png");
+	SpriteHero.SetScreenParam(window_w, window_h);
+	
 	//******************* ФИЗИЧЕСКИЕ ОБЪЕКТЫ *******************
 	CPxActor::SetPhysicsModel(PhysX.GetPhysicsModule());
 	CPxActor::SetScene(PhysX.GetScene());
@@ -444,6 +450,8 @@ void Display(void)
 	Plane.DrawPlane();
 	DrawKubs();
 	DrawAddedKubs();
+	//вывод спрайта персонажа
+	SpriteHero.DrawSprite();
 
 	//ShadowFBO.Blit(window_w - 10, window_h - 10);
 
@@ -472,6 +480,7 @@ void Reshape(int w, int h)
 {
 	glViewport(0, 0, (GLsizei)w, (GLsizei)h);
 	Camera.SetProjectionMatrix(45.0, (float)w / h, 0.1f, 200.0);
+	SpriteHero.SetScreenParam(w, h);
 };
 
 void Simulation(void)
@@ -520,8 +529,8 @@ void main(int argc, char **argv)
 {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_STENCIL | GLUT_MULTISAMPLE);
-
-	glutInitContextVersion(4, 0);
+	
+	//glutInitContextVersion(4, 0);            //с этой строкой спрайт не выводится совсем
 	glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutInitWindowPosition(1600 - window_w, 900 - window_h);
 	glutInitWindowSize(window_w, window_h);
