@@ -9,6 +9,7 @@
 #include "IL/ilu.h"
 #include "IL/ilut.h"
 #include "stdio.h"
+#include <time.h>
 
 #include "CShader.h"
 #include "CCamera.h"
@@ -56,6 +57,11 @@ CTexture Tex_Wood_Specular;			// зеркальная текстура дерева
 CTexture Tex_Sky_box;				// кубическая текстура неба
 CFBO ShadowFBO;						// буфер кадра для теней
 CSprite SpriteHero;                 // спрайт персонажа
+CObject* targets;					// объекты мишеней
+CModel targetModel;					// модель мишени
+CMaterialPhong targetsMat;			// материал мишеней (красный по задаче SCSG-6)
+CSourceLight LightTargets;          // источник для мишеней (по задаче SCSG-6)
+CShader ShaderPhong;                // шейдер для мишеней (по задаче SCSG-6)
 
 CPxMaterial gMaterial;				// объект для представления материала (задает упругость, коэффициент трения и т.д.)
 CPxShape	gShape;					// физическая модель
@@ -66,6 +72,10 @@ CPxActor*	AddedKubActor;			// актор для представления статического объекта - доб
 const int COUNT_KUB_ROWS = 5;		// количество рядов
 const float KUB_SIZE = 10;			// размер кубика
 const float KUB_INTERVAL = 5.0f;	// промежуток между кубиками
+
+// МИШЕНИ
+const float TARGET_INTERVAL = 10.0f;  //расстояние между мишенями
+const float TARGET_SIZE = 5.0f;       //размер мишени
 
 // ПЕРСОНАЖ
 PxControllerManager	*manager;		// менеджер всех персонажей
@@ -88,6 +98,7 @@ short AddedIndex = 0;				// индексирование добавляемых объектов
 POINT now_position_mause;			// нынешняя позиция мыши
 int mause_move_x, mause_move_y;		// перемещение мыши
 float width_plane = 200;			// размер плоскости
+int numTargets;                     // количество мишеней
 vec3 LightPosition = \
 		vec3((float)-width_plane / 2, 40.0f, (float)-width_plane / 2);// позиция источника света
 
@@ -117,6 +128,10 @@ void	InitObject(void)
 	LightMix.SetAmbient(vec4(0.8f, 0.8f, 0.8f, 0.8f));
 	LightMix.SetDiffuse(vec4(0.8f, 0.8f, 0.8f, 0.8f));
 	LightMix.SetPosition(vec4(LightPosition, 1.0f));
+
+	LightTargets.SetAmbient(vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	LightTargets.SetDiffuse(vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	LightTargets.SetPosition(vec4(LightPosition, 1.0f));
 
 	// текстуры плоскости
 	Tex_Mask.SetActiveBlock(GL_TEXTURE0);
@@ -159,6 +174,11 @@ void	InitObject(void)
 	// настройки спрайта персонажа
 	SpriteHero.Load("hero.png");
 	SpriteHero.SetScreenParam(window_w, window_h);
+
+	// материал мишени
+	targetsMat.SetAmbient(vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	targetsMat.SetDiffuse(vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	targetsMat.SetShiness(32.0f);
 	
 	//******************* ФИЗИЧЕСКИЕ ОБЪЕКТЫ *******************
 	CPxActor::SetPhysicsModel(PhysX.GetPhysicsModule());
@@ -232,6 +252,35 @@ void	InitObject(void)
 
 	AddedKubActor = new CPxActor[100];
 	AddedKub = new CObject[100];
+
+	// мишени
+	targetModel.CreateBox(TARGET_SIZE, 5 * TARGET_SIZE, TARGET_SIZE);
+	int center = width_plane / 2;
+	numTargets = center / TARGET_INTERVAL;
+	int x_tmp = 2 * TARGET_INTERVAL, z_tmp = 2 * TARGET_INTERVAL; 
+	float x = 0, z = 0;
+	targets = new CObject[numTargets];
+	targets[0].SetPosition(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
+	srand(time(0));
+	for (int i = 0; i < numTargets; i++)
+	{
+		targets[i].SetModel(&targetModel);
+		targets[i].SetMaterial(&targetsMat);
+		targets[i].SetAngle(0);
+		targets[i].SetLight(&LightTargets);
+		for (int j = 0; j < i; j++)
+		{
+			targets[j].GetPosition(x, z);
+			x_tmp = (int)(rand() % (int)(width_plane - TARGET_INTERVAL));
+			z_tmp = (int)(rand() % (int)(width_plane - TARGET_INTERVAL));
+			if (x_tmp > (x - TARGET_INTERVAL) && x_tmp < (x + TARGET_INTERVAL) && z_tmp > (z - TARGET_INTERVAL) && z_tmp < (z + TARGET_INTERVAL))
+			{
+				x_tmp -= TARGET_INTERVAL;
+				z_tmp -= TARGET_INTERVAL;
+			}
+			targets[i].SetPosition(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
+		}
+	}
 
 	// FPS
 	QueryPerformanceFrequency((LARGE_INTEGER*)&TicsPerSec);
@@ -427,6 +476,8 @@ void Display(void)
 	Plane.DrawPlane();
 	DrawKubs();
 	DrawAddedKubs();
+	for (int i = 0; i < numTargets; i++)
+		targets[i].Draw();
 
 	// *********** ОСНОВНАЯ КАМЕРА ***************
 	ShadowFBO.Stop();
@@ -450,6 +501,10 @@ void Display(void)
 	Plane.DrawPlane();
 	DrawKubs();
 	DrawAddedKubs();
+	CObject::SetShader(&ShaderPhong);
+	for (int i = 0; i < numTargets; i++)
+		targets[i].Draw();
+
 	//вывод спрайта персонажа
 	SpriteHero.DrawSprite();
 
@@ -540,25 +595,31 @@ void main(int argc, char **argv)
 	// загрузка шейдеров
 	if (!ShaderDiffSpec.Load("SHADER\\DiffuseAndSpecular_Shadow.vsh", "SHADER\\DiffuseAndSpecular_Shadow.fsh"))
 	{
-		cout << "Don't finde shader file!\n";
+		cout << "Don't find shader file!\n";
 		exit(0);
 	}
 
 	if (!ShaderMix.Load("SHADER\\Mix_Shadow.vsh", "SHADER\\Mix_Shadow.fsh"))
 	{
-		cout << "Don't finde shader file!\n";
+		cout << "Don't find shader file!\n";
 		exit(0);
 	}
 
 	if (!ShaderSkyBox.Load("SHADER\\SkyBox.vsh", "SHADER\\SkyBox.fsh"))
 	{
-		cout << "Don't finde shader file!\n";
+		cout << "Don't find shader file!\n";
 		exit(0);
 	}
 
 	if (!ShaderDepth.Load("SHADER\\DepthOnly.vsh", "SHADER\\DepthOnly.fsh"))
 	{
-		cout << "Don't finde shader file!\n";
+		cout << "Don't find shader file!\n";
+		exit(0);
+	}
+
+	if (!ShaderPhong.Load("SHADER\\Phong.vsh", "SHADER\\Phong.fsh"))
+	{
+		cout << "Don't find shader file!\n";
 		exit(0);
 	}
 

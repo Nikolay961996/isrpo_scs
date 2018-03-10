@@ -32,6 +32,7 @@ class CPlane
 	int		VertexCount;
 	GLubyte*	DataHight;
 	int			Hight;
+	float       WidthCenter;
 public:
 	CPlane(void);
 	//	Задать используемый шейдер
@@ -50,4 +51,5 @@ public:
 	void	DrawPlane(void);
 	void	SetDataHight(GLubyte* d);
 	void	SetTexHight(int d);
+	float   GetHeight(int x, int z);
 };

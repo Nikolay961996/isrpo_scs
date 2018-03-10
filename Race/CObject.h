@@ -41,6 +41,7 @@ public:
 
 	void SetLight(CSourceLight* l);
 	void	SetPosition(float x, float y, float z);
+	void    GetPosition(float& x, float& z);
 	//	«адать угол поворота в градусах относительно оси OY
 	void	SetAngle(float a);
 	void	SetTransformMatrix(const float* m);

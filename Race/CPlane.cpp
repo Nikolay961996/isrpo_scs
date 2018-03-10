@@ -37,6 +37,7 @@ void CPlane::SetLight(CSourceLight* l)
 
 void	CPlane::CreatePlane(PxScene* gS, PxCooking* gC, int w)
 {
+	WidthCenter = (float)w / 2;
 	// структура ддля представления вершины
 	struct	Point
 	{
@@ -100,7 +101,6 @@ void	CPlane::CreatePlane(PxScene* gS, PxCooking* gC, int w)
 		x = 0;
 		z += dx;
 	}
-
 
 	// массив индексов, для каждого треугольника нужно 3 вершины
 	GLuint* Indeces = new GLuint[(PlaneSegCount - 1) * (PlaneSegCount - 1) * 2 * 3];
@@ -264,4 +264,9 @@ void	CPlane::SetDataHight(GLubyte* d)
 void	CPlane::SetTexHight(int d)
 {
 	Hight = d;
+}
+
+float CPlane::GetHeight(int x, int z)
+{
+	return (float)DataHight[3 * x * Hight + z * 3] * ((float)40 / 255);
 }

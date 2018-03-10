@@ -53,6 +53,12 @@ void	CObject::SetPosition(float x, float y, float z)
 	ModelMatrix[14] = Position[2];
 }
 
+void CObject::GetPosition(float & x, float & z)
+{
+	x = Position[0];
+	z = Position[2];
+}
+
 //	«адать угол поворота в градусах относительно оси OY
 void	CObject::SetAngle(float a)
 {
