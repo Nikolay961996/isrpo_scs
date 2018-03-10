@@ -32,7 +32,6 @@ class CPlane
 	int		VertexCount;
 	GLubyte*	DataHight;
 	int			Hight;
-	float       WidthCenter;
 public:
 	CPlane(void);
 	//	Задать используемый шейдер

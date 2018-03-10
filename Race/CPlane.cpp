@@ -37,7 +37,6 @@ void CPlane::SetLight(CSourceLight* l)
 
 void	CPlane::CreatePlane(PxScene* gS, PxCooking* gC, int w)
 {
-	WidthCenter = (float)w / 2;
 	// структура ддля представления вершины
 	struct	Point
 	{
