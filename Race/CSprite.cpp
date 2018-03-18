@@ -72,7 +72,7 @@ void	CSprite::DrawSprite()
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, bufferID);
 	glDrawPixels(width, height, IL_RGBA, IL_UNSIGNED_BYTE, 0);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-	
+	glDisable(GL_BLEND);
 };
 
 
