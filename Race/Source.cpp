@@ -67,6 +67,9 @@ CPxMaterial gMaterial;				// объект для представления материала (задает упругост
 CPxShape	gShape;					// физическая модель
 CPxActor*	KubActor;				// актор для представления статического объекта - куба
 CPxActor*	AddedKubActor;			// актор для представления статического объекта - добавляемый куба
+CPxMaterial gMaterialTarget;        // объект для представления материала мишени
+CPxShape    gShapeTarget;           // физическая модель мишени
+CPxActor*   TargetActor;            // актор для представления статического объекта - мишени
 
 // PIRAMID MANAGER
 const int COUNT_KUB_ROWS = 5;		// количество рядов
@@ -187,10 +190,13 @@ void	InitObject(void)
 	KubActor = new CPxActor[(COUNT_KUB_ROWS + 1) * COUNT_KUB_ROWS / 2];
 	CPxMaterial::SetPhysicsModel(PhysX.GetPhysicsModule());
 	gMaterial.SetMaterial(0.6f, 0.5f, 0.5f);
+	gMaterialTarget.SetMaterial(0.6f, 0.5f, 0.5f);
 
 	CPxShape::SetPhysicsModel(PhysX.GetPhysicsModule());
 	gShape.SetMaterial(&gMaterial);
 	gShape.AddBoxShape((float)KUB_SIZE / 2, (float)KUB_SIZE / 2, (float)KUB_SIZE / 2);
+	gShapeTarget.SetMaterial(&gMaterialTarget);
+	gShapeTarget.AddBoxShape(TARGET_SIZE, 5.0f * TARGET_SIZE, TARGET_SIZE);
 
 	// создание менеджера персонажей
 	manager = PxCreateControllerManager(*PhysX.GetScene());
@@ -257,10 +263,14 @@ void	InitObject(void)
 	targetModel.CreateBox(TARGET_SIZE, 5 * TARGET_SIZE, TARGET_SIZE);
 	int center = width_plane / 2;
 	numTargets = center / TARGET_INTERVAL;
+	TargetActor = new CPxActor[numTargets];
+
 	int x_tmp = 2 * TARGET_INTERVAL, z_tmp = 2 * TARGET_INTERVAL; 
 	float x = 0, z = 0;
 	targets = new CObject[numTargets];
 	targets[0].SetPosition(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
+	TargetActor[0].SetShape(&gShapeTarget);
+	TargetActor[0].CreatDymaicKub(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
 	srand(time(0));
 	for (int i = 0; i < numTargets; i++)
 	{
@@ -268,6 +278,11 @@ void	InitObject(void)
 		targets[i].SetMaterial(&targetsMat);
 		targets[i].SetAngle(0);
 		targets[i].SetLight(&LightTargets);
+
+		TargetActor[i].SetShape(&gShapeTarget);
+		TargetActor[i].SetMass(3.5);
+		TargetActor[i].SetGraf(&targets[i]);
+
 		for (int j = 0; j < i; j++)
 		{
 			targets[j].GetPosition(x, z);
@@ -279,7 +294,9 @@ void	InitObject(void)
 				z_tmp -= TARGET_INTERVAL;
 			}
 			targets[i].SetPosition(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
+			TargetActor[i].CreatDymaicKub(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
 		}
+		PhysX.AddActor(TargetActor[i].GetActor());
 	}
 
 	// FPS
@@ -560,6 +577,8 @@ void Simulation(void)
 		for (int i = 0; i < AddedIndex; i++)
 			AddedKubActor[i].Simulating(Simulation_Time_Passed * 0.1f);
 
+		/*for (int i = 0; i < numTargets; i++)
+			TargetActor[i].Simulating(Simulation_Time_Passed * 0.1f);*/
 	}
 	
 	// нажатия клавиш
