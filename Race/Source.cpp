@@ -268,9 +268,11 @@ void	InitObject(void)
 	int x_tmp = 2 * TARGET_INTERVAL, z_tmp = 2 * TARGET_INTERVAL; 
 	float x = 0, z = 0;
 	targets = new CObject[numTargets];
-	targets[0].SetPosition(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
+
 	TargetActor[0].SetShape(&gShapeTarget);
 	TargetActor[0].CreatDymaicKub(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
+	targets[0].SetPosition(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
+
 	srand(time(0));
 	for (int i = 0; i < numTargets; i++)
 	{
@@ -280,8 +282,6 @@ void	InitObject(void)
 		targets[i].SetLight(&LightTargets);
 
 		TargetActor[i].SetShape(&gShapeTarget);
-		TargetActor[i].SetMass(3.5);
-		TargetActor[i].SetGraf(&targets[i]);
 
 		for (int j = 0; j < i; j++)
 		{
@@ -294,8 +294,10 @@ void	InitObject(void)
 				z_tmp -= TARGET_INTERVAL;
 			}
 			targets[i].SetPosition(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
-			TargetActor[i].CreatDymaicKub(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
 		}
+		if (i != 0)	TargetActor[i].CreatDymaicKub(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
+		TargetActor[i].SetMass(0.5);
+		TargetActor[i].SetGraf(&targets[i]);
 		PhysX.AddActor(TargetActor[i].GetActor());
 	}
 
@@ -604,7 +606,7 @@ void main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_STENCIL | GLUT_MULTISAMPLE);
 	
-	glutInitContextVersion(3, 1);            //с этой строкой спрайт не выводится совсем
+	glutInitContextVersion(3, 1);
 	glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutInitWindowPosition(1600 - window_w, 900 - window_h);
 	glutInitWindowSize(window_w, window_h);
