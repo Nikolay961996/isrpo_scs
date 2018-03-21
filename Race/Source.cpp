@@ -604,7 +604,7 @@ void main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_STENCIL | GLUT_MULTISAMPLE);
 	
-	//glutInitContextVersion(4, 0);            //с этой строкой спрайт не выводится совсем
+	glutInitContextVersion(3, 1);            //с этой строкой спрайт не выводится совсем
 	glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutInitWindowPosition(1600 - window_w, 900 - window_h);
 	glutInitWindowSize(window_w, window_h);
