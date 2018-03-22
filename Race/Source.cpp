@@ -85,7 +85,7 @@ const float KUB_INTERVAL = 5.0f;	// промежуток между кубиками
 
 // МИШЕНИ
 const float TARGET_INTERVAL = 10.0f;  //расстояние между мишенями
-const float TARGET_SIZE = 5.0f;       //размер мишени
+const float TARGET_SIZE = 3.0f;       //размер мишени
 
 // ПЕРСОНАЖ
 PxControllerManager	*manager;		// менеджер всех персонажей
@@ -288,8 +288,8 @@ void	InitObject(void)
 	targets = new CObject[numTargets];
 
 	TargetActor[0].SetShape(&gShapeTarget);
-	TargetActor[0].CreatDymaicKub(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
-	targets[0].SetPosition(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
+	TargetActor[0].CreatDymaicKub(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp) + 15, z_tmp - center);
+	targets[0].SetPosition(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp) + 15, z_tmp - center);
 
 	srand(time(0));
 	for (int i = 0; i < numTargets; i++)
@@ -311,9 +311,9 @@ void	InitObject(void)
 				x_tmp -= TARGET_INTERVAL;
 				z_tmp -= TARGET_INTERVAL;
 			}
-			targets[i].SetPosition(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
+			targets[i].SetPosition(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp) + 15, z_tmp - center);
 		}
-		if (i != 0)	TargetActor[i].CreatDymaicKub(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp), z_tmp - center);
+		if (i != 0)	TargetActor[i].CreatDymaicKub(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp) + 15, z_tmp - center);
 		TargetActor[i].SetMass(0.5);
 		TargetActor[i].SetGraf(&targets[i]);
 		PhysX.AddActor(TargetActor[i].GetActor());
@@ -629,8 +629,8 @@ void Simulation(void)
 		for (int i = 0; i < AddedIndex; i++)
 			AddedKubActor[i].Simulating(Simulation_Time_Passed * 0.1f);
 
-		/*for (int i = 0; i < numTargets; i++)
-			TargetActor[i].Simulating(Simulation_Time_Passed * 0.1f);*/
+		for (int i = 0; i < numTargets; i++)
+			TargetActor[i].Simulating(Simulation_Time_Passed * 0.1f);
 	}
 	
 	// нажатия клавиш
