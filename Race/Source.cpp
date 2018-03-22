@@ -96,8 +96,8 @@ const int window_w = 1550;
 const int window_h = 900;				
 
 // FBO
-const int FBO_w = 4096;
-const int FBO_h = 4096;
+const int FBO_w = 512;
+const int FBO_h = 512;
 
 ULONGLONG t1, t2;					// время между кадрами
 ULONGLONG TicsPerSec;				// частота тиков
