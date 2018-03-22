@@ -63,6 +63,13 @@ CMaterialPhong targetsMat;			// материал мишеней (красный по задаче SCSG-6)
 CSourceLight LightTargets;          // источник для мишеней (по задаче SCSG-6)
 CShader ShaderPhong;                // шейдер для мишеней (по задаче SCSG-6)
 
+CModel bulletModel;					// модель пули
+CObject* bullet;					// объект пули
+CMaterialPhong bulletMaterial;      // Материал пули
+CPxActor*	bulletActor;			// актор для представления пули
+CSourceLight bulletLight;           // источник для пули
+const int BULLET_SIZE = 5;			// размер пули
+
 CPxMaterial gMaterial;				// объект для представления материала (задает упругость, коэффициент трения и т.д.)
 CPxShape	gShape;					// физическая модель
 CPxActor*	KubActor;				// актор для представления статического объекта - куба
@@ -136,6 +143,11 @@ void	InitObject(void)
 	LightTargets.SetDiffuse(vec4(1.0f, 0.0f, 0.0f, 1.0f));
 	LightTargets.SetPosition(vec4(LightPosition, 1.0f));
 
+	// источник для пули
+	bulletLight.SetAmbient(vec4(0.0f, 0.0f, 0.0f, 0.0f));
+	bulletLight.SetDiffuse(vec4(0.0f, 0.0f, 0.0f, 0.0f));
+	bulletLight.SetPosition(vec4(LightPosition, 1.0f));
+
 	// текстуры плоскости
 	Tex_Mask.SetActiveBlock(GL_TEXTURE0);
 	Tex_Grass.SetActiveBlock(GL_TEXTURE1);
@@ -182,7 +194,13 @@ void	InitObject(void)
 	targetsMat.SetAmbient(vec4(1.0f, 0.0f, 0.0f, 1.0f));
 	targetsMat.SetDiffuse(vec4(1.0f, 0.0f, 0.0f, 1.0f));
 	targetsMat.SetShiness(32.0f);
-	
+
+	// модель пули
+	bulletModel.CreateBox(BULLET_SIZE, BULLET_SIZE, BULLET_SIZE);
+	// материал пули
+	bulletMaterial.SetAmbient(vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	bulletMaterial.SetDiffuse(vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	bulletMaterial.SetShiness(32.0f);
 	//******************* ФИЗИЧЕСКИЕ ОБЪЕКТЫ *******************
 	CPxActor::SetPhysicsModel(PhysX.GetPhysicsModule());
 	CPxActor::SetScene(PhysX.GetScene());
@@ -318,12 +336,34 @@ void	DrawAddedKubs()
 		AddedKub[i].Draw();
 }
 
+void InitBullet() {
+	bulletActor = new CPxActor();
+	bullet = new CObject();
+
+	bullet->SetModel(&bulletModel);
+	bullet->SetMaterial(&bulletMaterial);
+	bullet->SetAngle(0);
+	bullet->SetLight(&bulletLight);
+	float x = 0, y = 0, z = 0;
+	Camera.GetPosition(x, y, z);
+	vec3 forwardVector = Camera.GetForwardVector();
+
+	bullet->SetPosition(forwardVector.x * window_w / 10 + x, forwardVector.y * 150, forwardVector.z * window_w / 10 + z);
+
+	bulletActor->SetShape(&gShape);
+	bulletActor->CreatDymaicKub(forwardVector.x * window_w / 10 + x, forwardVector.y * 150, forwardVector.z * window_w / 10 + z);
+	bulletActor->SetMass(0.5);
+	bulletActor->SetGraf(bullet);
+	PhysX.AddActor(bulletActor->GetActor());
+}
+
 void PressKeys()
 {
 	//выход из программы
 	if (GetAsyncKeyState(VK_ESCAPE))
 		exit(0);
-
+	if (GetAsyncKeyState(VK_LBUTTON))
+		InitBullet();
 	//режим линий полигонов
 	if (GetAsyncKeyState(0x31))
 	{
@@ -490,11 +530,19 @@ void Display(void)
 	CObject::SetCamera(&CameraShadow);
 	CObject::SetShader(&ShaderDepth);
 	glCullFace(GL_FRONT);
+	float x = 0, y = 0, z = 0;
+	Camera.GetPosition(x, y, z);
+	vec3 forwardVector = Camera.GetForwardVector();
+	Camera.GetViewMatrix();
+	forwardVector = normalize(forwardVector);
 
 	// вывод объектов
 	Plane.DrawPlane();
 	DrawKubs();
 	DrawAddedKubs();
+	if (bullet != nullptr) 
+		bullet->Draw();
+
 	for (int i = 0; i < numTargets; i++)
 		targets[i].Draw();
 
@@ -520,6 +568,8 @@ void Display(void)
 	Plane.DrawPlane();
 	DrawKubs();
 	DrawAddedKubs();
+	if (bullet != nullptr)
+		bullet->Draw();
 	CObject::SetShader(&ShaderPhong);
 	for (int i = 0; i < numTargets; i++)
 		targets[i].Draw();
