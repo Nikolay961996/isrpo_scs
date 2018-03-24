@@ -68,8 +68,11 @@ CObject* bullet;					// объект пули
 CMaterialPhong bulletMaterial;      // Материал пули
 CPxActor*	bulletActor;			// актор для представления пули
 CSourceLight bulletLight;           // источник для пули
-const int BULLET_SIZE = 5;			// размер пули
+const int BULLET_SIZE = 1;			// размер пули
+const double SHOOT_SPEED = 10;			// скорость стрельбы
+double shootValue = 0;				
 
+bool pressButton = false;
 CPxMaterial gMaterial;				// объект для представления материала (задает упругость, коэффициент трения и т.д.)
 CPxShape	gShape;					// физическая модель
 CPxActor*	KubActor;				// актор для представления статического объекта - куба
@@ -77,7 +80,6 @@ CPxActor*	AddedKubActor;			// актор для представления статического объекта - доб
 CPxMaterial gMaterialTarget;        // объект для представления материала мишени
 CPxShape    gShapeTarget;           // физическая модель мишени
 CPxActor*   TargetActor;            // актор для представления статического объекта - мишени
-
 // PIRAMID MANAGER
 const int COUNT_KUB_ROWS = 5;		// количество рядов
 const float KUB_SIZE = 10;			// размер кубика
@@ -93,7 +95,7 @@ PxController		*controller;	// контроллер персонажа
 
 // ЭКРАН
 const int window_w = 1550;
-const int window_h = 900;				
+const int window_h = 900;
 
 // FBO
 const int FBO_w = 4096;
@@ -110,14 +112,14 @@ int mause_move_x, mause_move_y;		// перемещение мыши
 float width_plane = 200;			// размер плоскости
 int numTargets;                     // количество мишеней
 vec3 LightPosition = \
-		vec3((float)-width_plane / 2, 40.0f, (float)-width_plane / 2);// позиция источника света
+vec3((float)-width_plane / 2, 40.0f, (float)-width_plane / 2);// позиция источника света
 
 // FPS
 int count_frame = 0;
-ULONGLONG tc1, tc2; 
+ULONGLONG tc1, tc2;
 string Title;
 
-void	InitObject(void) 
+void	InitObject(void)
 {
 	CameraShadow.SetPosition(LightPosition);
 	CameraShadow.SetProjectionMatrix(45.0, (float)FBO_w / FBO_h, 0.1f, 500.0);
@@ -283,7 +285,7 @@ void	InitObject(void)
 	numTargets = center / TARGET_INTERVAL;
 	TargetActor = new CPxActor[numTargets];
 
-	int x_tmp = 2 * TARGET_INTERVAL, z_tmp = 2 * TARGET_INTERVAL; 
+	int x_tmp = 2 * TARGET_INTERVAL, z_tmp = 2 * TARGET_INTERVAL;
 	float x = 0, z = 0;
 	targets = new CObject[numTargets];
 
@@ -306,7 +308,7 @@ void	InitObject(void)
 			targets[j].GetPosition(x, z);
 			x_tmp = (int)(rand() % (int)(width_plane - TARGET_INTERVAL));
 			z_tmp = (int)(rand() % (int)(width_plane - TARGET_INTERVAL));
-			if (x_tmp > (x - TARGET_INTERVAL) && x_tmp < (x + TARGET_INTERVAL) && z_tmp > (z - TARGET_INTERVAL) && z_tmp < (z + TARGET_INTERVAL))
+			if (x_tmp > (x - TARGET_INTERVAL) && x_tmp < (x + TARGET_INTERVAL) && z_tmp >(z - TARGET_INTERVAL) && z_tmp < (z + TARGET_INTERVAL))
 			{
 				x_tmp -= TARGET_INTERVAL;
 				z_tmp -= TARGET_INTERVAL;
@@ -319,6 +321,22 @@ void	InitObject(void)
 		PhysX.AddActor(TargetActor[i].GetActor());
 	}
 
+	bullet = NULL;
+	bulletActor = NULL;
+	bullet = new CObject();
+	bulletActor = new CPxActor();
+
+	bullet->SetModel(&bulletModel);
+	bullet->SetMaterial(&bulletMaterial);
+	bullet->SetAngle(0);
+	bullet->SetLight(&bulletLight);
+	bullet->SetPosition(0, 0, 0);
+
+	bulletActor->SetShape(&gShape);
+	bulletActor->SetMass(0.5);
+	bulletActor->SetGraf(bullet);
+	bulletActor->CreatDymaicKub(0, 0, 0);
+	PhysX.AddActor(bulletActor->GetActor());
 	// FPS
 	QueryPerformanceFrequency((LARGE_INTEGER*)&TicsPerSec);
 	QueryPerformanceCounter((LARGE_INTEGER*)&tc1);
@@ -337,33 +355,50 @@ void	DrawAddedKubs()
 }
 
 void InitBullet() {
-	bulletActor = new CPxActor();
+
+	bullet = NULL;
+	bulletActor = NULL;
 	bullet = new CObject();
+	bulletActor = new CPxActor();
+
+	float x = 0, y = 0, z = 0;
+	Camera.GetPosition(x, y, z);
+	vec3 forwardVector = Camera.GetForwardVector();
 
 	bullet->SetModel(&bulletModel);
 	bullet->SetMaterial(&bulletMaterial);
 	bullet->SetAngle(0);
 	bullet->SetLight(&bulletLight);
-	float x = 0, y = 0, z = 0;
-	Camera.GetPosition(x, y, z);
-	vec3 forwardVector = Camera.GetForwardVector();
-
-	bullet->SetPosition(forwardVector.x * window_w / 10 + x, forwardVector.y * 150, forwardVector.z * window_w / 10 + z);
+	bullet->SetPosition(forwardVector.x * 5 + x, forwardVector.y * 5 + y, forwardVector.z * 5 + z);
 
 	bulletActor->SetShape(&gShape);
-	bulletActor->CreatDymaicKub(forwardVector.x * window_w / 10 + x, forwardVector.y * 150, forwardVector.z * window_w / 10 + z);
 	bulletActor->SetMass(0.5);
 	bulletActor->SetGraf(bullet);
+	bulletActor->CreatDymaicKub(forwardVector.x * 15 + x, forwardVector.y * 15 + y, forwardVector.z * 15 + z);
+
 	PhysX.AddActor(bulletActor->GetActor());
+	bulletActor->AddForce(PxVec3(forwardVector.x*20000, forwardVector.y*20000, forwardVector.z*20000));
+	
+
 }
 
 void PressKeys()
 {
+	
 	//выход из программы
 	if (GetAsyncKeyState(VK_ESCAPE))
 		exit(0);
+
 	if (GetAsyncKeyState(VK_LBUTTON))
-		InitBullet();
+	{
+		shootValue += Simulation_Time_Passed;
+		if (shootValue > SHOOT_SPEED*10)
+		{
+			InitBullet();
+			shootValue = 0;
+		}
+		
+	}
 	//режим линий полигонов
 	if (GetAsyncKeyState(0x31))
 	{
@@ -448,9 +483,9 @@ void SimulatePersonMove(float time)
 {
 	bool forward = GetAsyncKeyState(0x57);
 	bool backward = GetAsyncKeyState(0x53);
-	bool left = GetAsyncKeyState(0x41); 
+	bool left = GetAsyncKeyState(0x41);
 	bool right = GetAsyncKeyState(0x44);
-	
+
 	PxVec3	moveDirection = PxVec3(0, -0.98, 0);
 	float speed = 0.7;
 
@@ -494,10 +529,10 @@ void SimulatePersonMove(float time)
 
 		// передвижение персонажа
 		controller->move(moveDirection, 0.1, mStepSize, PxControllerFilters());
-		
+
 		// установка позиции камеры
 		PxExtendedVec3	Positon = controller->getPosition();
-		
+
 		// контроль границ
 		float border = 5.0f;
 		if (Positon.x > width_plane / 2 - border)
@@ -540,7 +575,7 @@ void Display(void)
 	Plane.DrawPlane();
 	DrawKubs();
 	DrawAddedKubs();
-	if (bullet != nullptr) 
+	if (bullet != nullptr)
 		bullet->Draw();
 
 	for (int i = 0; i < numTargets; i++)
@@ -606,7 +641,11 @@ void Reshape(int w, int h)
 	Camera.SetProjectionMatrix(45.0, (float)w / h, 0.1f, 200.0);
 	SpriteHero.SetScreenParam(w, h);
 };
-
+void Keyboard(unsigned char key, int w, int h)
+{
+	if (key == VK_BACK)
+		InitBullet();
+}
 void Simulation(void)
 {
 	//	ОПРЕДЕЛЕНИЕ ВРЕМЕНИ ПРОШЕДШЕГО С МОМЕНТА ПОСЛЕДНЕЙ СИМУЛЯЦИИ
@@ -628,11 +667,12 @@ void Simulation(void)
 
 		for (int i = 0; i < AddedIndex; i++)
 			AddedKubActor[i].Simulating(Simulation_Time_Passed * 0.1f);
+		bulletActor->Simulating(Simulation_Time_Passed * 0.1f);
 
 		/*for (int i = 0; i < numTargets; i++)
 			TargetActor[i].Simulating(Simulation_Time_Passed * 0.1f);*/
 	}
-	
+
 	// нажатия клавиш
 	PressKeys();
 
@@ -655,7 +695,7 @@ void main(int argc, char **argv)
 {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_STENCIL | GLUT_MULTISAMPLE);
-	
+
 	glutInitContextVersion(3, 1);
 	glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutInitWindowPosition(1600 - window_w, 900 - window_h);
@@ -696,7 +736,7 @@ void main(int argc, char **argv)
 
 	// включение общих параметрров
 	Enables();
-	
+
 	// инициализация  PhysX
 	PhysX.Init();
 
@@ -706,10 +746,10 @@ void main(int argc, char **argv)
 	ilutInit();
 
 	InitObject();
-
+	glutKeyboardFunc(Keyboard);
 	glutDisplayFunc(Display);
 	glutReshapeFunc(Reshape);
 	glutIdleFunc(Simulation);
-	
+
 	glutMainLoop();
 };

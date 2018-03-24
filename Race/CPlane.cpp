@@ -267,5 +267,6 @@ void	CPlane::SetTexHight(int d)
 
 float CPlane::GetHeight(int x, int z)
 {
+
 	return (float)DataHight[3 * x * Hight + z * 3] * ((float)40 / 255);
 }

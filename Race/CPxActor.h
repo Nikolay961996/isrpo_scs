@@ -1,6 +1,7 @@
 #pragma once
 #include "PxPhysicsAPI.h"
 #include "CPxShape.h"
+#include "PxRigidBody.h"
 #include <iostream>
 #include <vector>
 #include "CObject.h"
@@ -35,4 +36,5 @@ public:
 	const float* GetTransformMatrix();
 	void SetGraf(CObject* gr);
 	void Simulating(float time);
+	void AddForce(PxVec3);
 };

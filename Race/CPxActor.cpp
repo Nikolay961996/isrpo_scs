@@ -115,3 +115,9 @@ void CPxActor::SetScene(PxScene* Sx)
 {
 	gScene = Sx;
 }
+
+void CPxActor::AddForce(PxVec3 acceleration) {
+	if (DynamicActor != NULL){
+		DynamicActor->addForce(acceleration, PxForceMode::eFORCE, true);
+	}
+}
