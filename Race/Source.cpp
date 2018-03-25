@@ -306,8 +306,8 @@ void	InitObject(void)
 		for (int j = 0; j < i; j++)
 		{
 			targets[j].GetPosition(x, z);
-			x_tmp = (int)(rand() % (int)(width_plane - TARGET_INTERVAL));
-			z_tmp = (int)(rand() % (int)(width_plane - TARGET_INTERVAL));
+			x_tmp = (int)(rand() % (int)(width_plane - 2*TARGET_INTERVAL));
+			z_tmp = (int)(rand() % (int)(width_plane - 2*TARGET_INTERVAL));
 			if (x_tmp > (x - TARGET_INTERVAL) && x_tmp < (x + TARGET_INTERVAL) && z_tmp >(z - TARGET_INTERVAL) && z_tmp < (z + TARGET_INTERVAL))
 			{
 				x_tmp -= TARGET_INTERVAL;
@@ -316,7 +316,7 @@ void	InitObject(void)
 			targets[i].SetPosition(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp) + 15, z_tmp - center);
 		}
 		if (i != 0)	TargetActor[i].CreatDymaicKub(x_tmp - center, Plane.GetHeight(x_tmp, z_tmp) + 15, z_tmp - center);
-		TargetActor[i].SetMass(0.5);
+		TargetActor[i].SetMass(3.5);
 		TargetActor[i].SetGraf(&targets[i]);
 		PhysX.AddActor(TargetActor[i].GetActor());
 	}
