@@ -55,7 +55,7 @@ void	CPlane::CreatePlane(PxScene* gS, PxCooking* gC, int w)
 	// загрузка изображеи
 	char C_String[50];
 	C_String[0] = '\0';
-	strcat_s(C_String, "Textures/heightfield.png");
+	strcat_s(C_String, "Textures/Bonaparte.bmp");
 	wchar_t Unicode_String[50];
 	wsprintf(Unicode_String, L"%S", C_String);
 
@@ -267,6 +267,6 @@ void	CPlane::SetTexHight(int d)
 
 float CPlane::GetHeight(int x, int z)
 {
-
+	return 50;
 	return (float)DataHight[3 * x * Hight + z * 3] * ((float)40 / 255);
 }

@@ -154,7 +154,7 @@ void	InitObject(void)
 	Tex_Mask.SetActiveBlock(GL_TEXTURE0);
 	Tex_Grass.SetActiveBlock(GL_TEXTURE1);
 	Tex_Dirt.SetActiveBlock(GL_TEXTURE2);
-	Tex_Mask.Load("heightfield.png");
+	Tex_Mask.Load("Bonaparte.bmp");
 	Tex_Grass.Load("grass1.png");
 	Tex_Dirt.Load("dirt.png");
 
